@@ -1,0 +1,86 @@
+name: Jenkins CLI CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry install
+
+    - name: Build wheel
+      run: poetry build -f wheel
+
+    - name: Upload Release Asset
+      if: always()
+      id: upload-release-asset
+      uses: actions/upload-artifact@v4
+      with:
+        name: jenkins-terminal-wheel
+        path: dist/*.whl
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: jenkins-terminal-wheel
+
+    - name: Upload Release to GitHub
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: 'jenkins-terminal-wheel/*.whl'
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+
+  publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: jenkins-terminal-wheel
+        path: jenkins-terminal-wheel # Specify the correct path to download the artifact
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        python -m pip install --upgrade twine
+        twine upload jenkins-terminal-wheel/*.whl
