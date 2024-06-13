@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "jenkins-terminal"
+version = "0.1.0"
+description = "A CLI tool for Jenkins"
+authors = ["Loki <yongxiang.zhan@outlook.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+typer = "^0.12.3"
+rich = "^13.7.1"
+pyyaml = "^6.0.1"
+python-jenkins = "^1.8.2"
+
+[tool.poetry.scripts]
+jenkins = "jenkins_terminal.main:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
