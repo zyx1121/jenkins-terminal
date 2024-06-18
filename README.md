@@ -7,6 +7,7 @@ A command-line tool for interacting with Jenkins, allowing you to configure Jenk
 - Set Jenkins configuration parameters interactively or via command-line options
 - Trigger Jenkins jobs with parameters
 - Get the status of Jenkins jobs
+- Fetch and display Jenkins job console outputs
 
 ## Installation
 
@@ -73,6 +74,14 @@ Get the status of a Jenkins job:
 
 ```bash
 jenkins status <job>
+```
+
+### Fetch Jenkins Job Console Output
+
+Fetch and display the console output of the latest or a specific Jenkins job build:
+
+```bash
+jenkins console <job> [--build-number <number>] [--max-lines <number>]
 ```
 
 ## Acknowledgements
