@@ -47,24 +47,15 @@ def load_params_from_file(config_file: Path) -> dict:
 
 
 def confirm_parameters(parameters: dict) -> bool:
-    params_text = "\n".join(
-        [
-            f"[cyan]{key}[/cyan] = [yellow]{value}[/yellow]"
-            for key, value in parameters.items()
-        ]
-    )
-    console.print(
-        Panel(params_text, title="Parameters", title_align="left", border_style="dim")
-    )
+    params_text = "\n".join([f"[cyan]{key}[/cyan] = [yellow]{value}[/yellow]" for key, value in parameters.items()])
+    console.print(Panel(params_text, title="Parameters", title_align="left", border_style="dim"))
     return Confirm.ask("Do you want to proceed with these parameters?")
 
 
 @app.command()
 def build(
     job: str = typer.Argument(..., help="Jenkins job path, e.g., sv/protocol_tests"),
-    params: Optional[List[str]] = typer.Argument(
-        None, help="Job parameters in key=value format or path to YAML config file"
-    ),
+    params: Optional[List[str]] = typer.Argument(None, help="Job parameters in key=value format or path to YAML config file"),
 ):
     """
     Trigger a Jenkins job
@@ -91,9 +82,7 @@ def build(
 
     try:
         server.build_job(job, parameters)
-        console.print(
-            Panel("Build triggered successfully", style="green", border_style="dim")
-        )
+        console.print(Panel("Build triggered successfully", style="green", border_style="dim"))
     except jenkins.JenkinsException as e:
         console.print(Panel(f"Build trigger failed: {e}", style="bold red"))
         raise typer.Exit(code=1)

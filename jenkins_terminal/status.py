@@ -51,23 +51,18 @@ def status(job: str):
                 parameters[param["name"]] = param["value"]
 
     # Format parameters
-    params_text = "\n".join(
-        [f"  {name}: {value}" for name, value in parameters.items()]
-    )
+    params_text = "\n".join([f"  {name}: {value}" for name, value in parameters.items()])
 
-    info_text = (
-        f"[bold][cyan]Job:[/cyan] {job}[/bold]\n"
-        f"[cyan]Status:[/cyan] {status}\n"
-        f"[cyan]Build Number:[/cyan] {last_build_number}\n"
-        f"[cyan]Build Time:[/cyan] {timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"[cyan]Duration:[/cyan] {duration}\n"
-        f"[cyan]Triggered By:[/cyan] {user}\n"
-        f"[cyan]Parameters:[/cyan]\n{params_text}"
-    )
+    info_text = ""
+    info_text += f"[bold][cyan]Job:[/cyan] {job}[/bold]\n"
+    info_text += f"[cyan]Status:[/cyan] {status}\n"
+    info_text += f"[cyan]Build Number:[/cyan] {last_build_number}\n"
+    info_text += f"[cyan]Build Time:[/cyan] {timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
+    info_text += f"[cyan]Duration:[/cyan] {duration}\n"
+    info_text += f"[cyan]Triggered By:[/cyan] {user}\n"
+    info_text += f"[cyan]Parameters:[/cyan]\n{params_text}"
 
-    console.print(
-        Panel(info_text, title="Job Status", title_align="left", border_style="dim")
-    )
+    console.print(Panel(info_text, title="Job Status", title_align="left", border_style="dim"))
 
 
 if __name__ == "__main__":

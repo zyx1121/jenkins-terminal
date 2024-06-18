@@ -39,9 +39,7 @@ def validate_config(config: dict):
 
 
 def get_jenkins_server(config: dict) -> jenkins.Jenkins:
-    return jenkins.Jenkins(
-        config["url"], username=config["username"], password=config["token"]
-    )
+    return jenkins.Jenkins(config["url"], username=config["username"], password=config["token"])
 
 
 @app.command()
@@ -57,16 +55,12 @@ def config(
 
     if not (username or url or token):
         url = Prompt.ask("Please enter Jenkins URL", default=config["url"])
-        username = Prompt.ask(
-            "Please enter Jenkins username", default=config["username"]
-        )
+        username = Prompt.ask("Please enter Jenkins username", default=config["username"])
         token = Prompt.ask("Please enter Jenkins API token", default=config["token"])
 
     if username:
         config["username"] = username
-        console.print(
-            Panel(f"Set username to {username}", style="green", border_style="dim")
-        )
+        console.print(Panel(f"Set username to {username}", style="green", border_style="dim"))
     if url:
         config["url"] = url
         console.print(Panel(f"Set url to {url}", style="green", border_style="dim"))
