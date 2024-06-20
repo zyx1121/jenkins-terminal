@@ -18,7 +18,7 @@ def load_config() -> dict:
     if CONFIG_FILE_PATH.exists():
         with CONFIG_FILE_PATH.open("r") as file:
             return yaml.safe_load(file)
-    return {"url": "", "username": "", "token": ""}
+    return {"url": "", "username": "", "token": "", "template": {"job": ""}}
 
 
 def save_config(config: dict):
@@ -29,12 +29,7 @@ def save_config(config: dict):
 
 def validate_config(config: dict):
     if not config["url"] or not config["username"] or not config["token"]:
-        console.print(
-            Panel(
-                "Please configure Jenkins URL, username, and token using the `config` command.",
-                style="bold red",
-            )
-        )
+        console.print(Panel("Please configure Jenkins URL, username, and token using the `config` command.", style="bold red"))
         raise typer.Exit()
 
 
@@ -47,6 +42,7 @@ def config(
     username: Optional[str] = typer.Option(None, "--username", help="Jenkins username"),
     url: Optional[str] = typer.Option(None, "--url", help="Jenkins URL"),
     token: Optional[str] = typer.Option(None, "--token", help="Jenkins API token"),
+    job: Optional[str] = typer.Option("", "--job", help="Default Jenkins job"),
 ):
     """
     Set Jenkins configuration parameters
@@ -57,6 +53,7 @@ def config(
         url = Prompt.ask("Please enter Jenkins URL", default=config["url"])
         username = Prompt.ask("Please enter Jenkins username", default=config["username"])
         token = Prompt.ask("Please enter Jenkins API token", default=config["token"])
+        job = Prompt.ask("Please enter Jenkins default job", default=config["template"].get("job", ""))
 
     if username:
         config["username"] = username
@@ -67,12 +64,13 @@ def config(
     if token:
         config["token"] = token
         console.print(Panel(f"Set token to {token}", style="green", border_style="dim"))
+    if job:
+        config["template"]["job"] = job
+        console.print(Panel(f"Set default job to {job}", style="green", border_style="dim"))
 
     save_config(config)
-    console.print(
-        Panel(
-            "Jenkins configuration saved successfully.",
-            style="green",
-            border_style="dim",
-        )
-    )
+    console.print(Panel("Jenkins configuration saved successfully.", style="green", border_style="dim"))
+
+
+if __name__ == "__main__":
+    app()

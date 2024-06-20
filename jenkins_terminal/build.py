@@ -8,7 +8,12 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
 
-from jenkins_terminal.config import get_jenkins_server, load_config, validate_config
+from jenkins_terminal.config import (
+    get_jenkins_server,
+    load_config,
+    save_config,
+    validate_config,
+)
 
 app = typer.Typer()
 console = Console()
@@ -46,15 +51,15 @@ def load_params_from_file(config_file: Path) -> dict:
         return file_parameters
 
 
-def confirm_parameters(parameters: dict) -> bool:
+def confirm_parameters(job: str, parameters: dict) -> bool:
     params_text = "\n".join([f"[cyan]{key}[/cyan] = [yellow]{value}[/yellow]" for key, value in parameters.items()])
-    console.print(Panel(params_text, title="Parameters", title_align="left", border_style="dim"))
+    console.print(Panel(params_text, title=f"Parameters for job: {job}", title_align="left", border_style="dim"))
     return Confirm.ask("Do you want to proceed with these parameters?")
 
 
 @app.command()
 def build(
-    job: str = typer.Argument(..., help="Jenkins job path, e.g., sv/protocol_tests"),
+    job: Optional[str] = typer.Argument(None, help="Jenkins job path, e.g., sv/protocol_tests"),
     params: Optional[List[str]] = typer.Argument(None, help="Job parameters in key=value format or path to YAML config file"),
 ):
     """
@@ -63,6 +68,16 @@ def build(
 
     config = load_config()
     validate_config(config)
+
+    # Use the last job if not provided
+    if job:
+        config["template"]["job"] = job
+    else:
+        job = config["template"].get("job")
+
+    if not job:
+        console.print(Panel("No job specified and no previous job found in template.", style="bold red"))
+        raise typer.Exit()
 
     parameters = {}
 
@@ -74,7 +89,7 @@ def build(
             else:
                 parameters.update(parse_params([param]))
 
-    if not confirm_parameters(parameters):
+    if not confirm_parameters(job, parameters):
         console.print(Panel("Build cancelled.", style="red"))
         raise typer.Exit()
 
@@ -83,6 +98,7 @@ def build(
     try:
         server.build_job(job, parameters)
         console.print(Panel("Build triggered successfully", style="green", border_style="dim"))
+        save_config(config)
     except jenkins.JenkinsException as e:
         console.print(Panel(f"Build trigger failed: {e}", style="bold red"))
         raise typer.Exit(code=1)

@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 import jenkins
 import typer
@@ -6,7 +7,12 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from jenkins_terminal.config import get_jenkins_server, load_config, validate_config
+from jenkins_terminal.config import (
+    get_jenkins_server,
+    load_config,
+    save_config,
+    validate_config,
+)
 
 app = typer.Typer()
 console = Console()
@@ -14,13 +20,25 @@ console = Console()
 
 @app.command()
 def builds(
-    job: str = typer.Argument(..., help="Jenkins job name, e.g., sv/protocol_tests"),
+    job: Optional[str] = typer.Argument(None, help="Jenkins job name, e.g., sv/protocol_tests"),
 ):
     """
     List the latest ten builds of a specified Jenkins job
     """
     config = load_config()
     validate_config(config)
+
+    # Use the last job if not provided
+    if job:
+        config["template"]["job"] = job
+    else:
+        job = config["template"].get("job")
+
+    if not job:
+        console.print(Panel("No job specified and no previous job found in template.", style="bold red"))
+        raise typer.Exit()
+
+    save_config(config)
 
     server = get_jenkins_server(config)
 
