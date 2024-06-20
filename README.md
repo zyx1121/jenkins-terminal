@@ -9,6 +9,7 @@ A command-line tool for interacting with Jenkins, allowing you to configure Jenk
 - Get the status of Jenkins jobs
 - Fetch and display Jenkins job console outputs
 - List the builds of a specified Jenkins job
+- Template job feature to automatically save and read last executed job
 
 ## Installation
 
@@ -53,13 +54,13 @@ jenkins config --username <username> --url <url> --token <token>
 Trigger a Jenkins job with parameters:
 
 ```bash
-jenkins build <job> <key1>=<value1> <key2>=<value2> ...
+jenkins build [<job>] <key1>=<value1> <key2>=<value2> ...
 ```
 
 You can also specify a YAML file containing job parameters:
 
 ```bash
-jenkins build <job> <parameters.yaml>
+jenkins build [<job>] <parameters.yaml>
 ```
 
 The YAML file should contain the job parameters in the following format:
@@ -74,7 +75,7 @@ key2: value2
 Get the status of a Jenkins job:
 
 ```bash
-jenkins status <job> [--build-number/-b <number>]
+jenkins status [<job>] [--build-number/-b <number>]
 ```
 
 ### Fetch Jenkins Job Console Output
@@ -82,7 +83,7 @@ jenkins status <job> [--build-number/-b <number>]
 Fetch and display the console output of the latest or a specific Jenkins job build:
 
 ```bash
-jenkins console <job> [--build-number/-b <number>] [--max-lines/-l <number>]
+jenkins console [<job>] [--build-number/-b <number>] [--max-lines/-l <number>]
 ```
 
 ### List the builds of Jenkins Job
@@ -90,7 +91,7 @@ jenkins console <job> [--build-number/-b <number>] [--max-lines/-l <number>]
 List the builds of a specified Jenkins job:
 
 ```bash
-jenkins builds <job>
+jenkins builds [<job>]
 ```
 
 ## Acknowledgements
