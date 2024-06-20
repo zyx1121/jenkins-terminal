@@ -14,8 +14,8 @@ console = Console()
 @app.command()
 def output(
     job: str = typer.Argument(..., help="Jenkins job name, e.g., sv/protocol_tests"),
-    build_number: Optional[int] = typer.Option(None, "--build-number", help="Specific build number to fetch the console output"),
-    max_lines: Optional[int] = typer.Option(None, "--max-lines", help="Maximum number of lines to display from the console output"),
+    build_number: Optional[int] = typer.Option(None, "--build-number", "-b", help="Specific build number to fetch the console output"),
+    max_lines: Optional[int] = typer.Option(None, "--max-lines", "-l", help="Maximum number of lines to display from the console output"),
 ):
     """
     Fetch the console output of the latest or specific Jenkins job build
