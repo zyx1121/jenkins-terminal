@@ -19,21 +19,20 @@ app = typer.Typer()
 console = Console()
 
 
-def parse_params(params: Optional[List[str]]) -> dict:
+def parse_param(param: Optional[str]) -> dict:
     parameters = {}
-    if params:
-        for param in params:
-            try:
-                key, value = param.split("=")
-                parameters[key] = value
-            except ValueError:
-                console.print(
-                    Panel(
-                        f"Invalid parameter format: {param}. Should be key=value",
-                        style="bold red",
-                    )
+    if param:
+        try:
+            key, value = param.split("=")
+            parameters[key] = value
+        except ValueError:
+            console.print(
+                Panel(
+                    f"Invalid parameter format: {param}. Should be key=value",
+                    style="bold red",
                 )
-                raise typer.Exit(code=1)
+            )
+            raise typer.Exit(code=1)
     return parameters
 
 
@@ -60,7 +59,9 @@ def confirm_parameters(job: str, parameters: dict) -> bool:
 @app.command()
 def build(
     job: Optional[str] = typer.Argument(None, help="Jenkins job path, e.g., sv/protocol_tests"),
-    params: Optional[List[str]] = typer.Argument(None, help="Job parameters in key=value format or path to YAML config file"),
+    param: Optional[str] = typer.Option(None, "--param", "-p", help="Job parameter in key=value format"),
+    file: Optional[Path] = typer.Option(None, "--file", "-f", help="Path to YAML file containing job parameters"),
+    load: Optional[int] = typer.Option(None, "--load", "-l", help="Load parameters from a specific build number"),
 ):
     """
     Trigger a Jenkins job
@@ -81,13 +82,33 @@ def build(
 
     parameters = {}
 
-    if params:
-        for param in params:
-            param_path = Path(param)
-            if param_path.is_file():
-                parameters.update(load_params_from_file(param_path))
+    # Use the last parameters if not provided
+    last_build_info = config["template"]["builds"].get(job)
+    if last_build_info:
+        parameters.update(last_build_info.get("parameters", {}))
+
+    if load is not None:
+        try:
+            server = get_jenkins_server(config)
+            if load == 0:
+                build_info = server.get_job_info(job)["lastCompletedBuild"]
+                build_number = build_info["number"]
             else:
-                parameters.update(parse_params([param]))
+                build_number = load
+            build_info = server.get_build_info(job, build_number)
+            loaded_parameters = build_info.get("actions", [{}])[0].get("parameters", {})
+            parameters.update({param["name"]: param["value"] for param in loaded_parameters})
+        except jenkins.JenkinsException as e:
+            console.print(Panel(f"Failed to load parameters from build number {load}: {e}", style="bold red"))
+            raise typer.Exit(code=1)
+
+    if file:
+        file_parameters = load_params_from_file(file)
+        parameters.update(file_parameters)
+
+    if param:
+        new_parameters = parse_param(param)
+        parameters.update(new_parameters)
 
     if not confirm_parameters(job, parameters):
         console.print(Panel("Build cancelled.", style="red"))
@@ -96,8 +117,19 @@ def build(
     server = get_jenkins_server(config)
 
     try:
+        last_completed_build = server.get_job_info(job).get("lastCompletedBuild")
+        if last_completed_build:
+            last_build_number = last_completed_build["number"]
+        else:
+            last_build_number = 0  # Default to 0 if no completed build exists
+
         server.build_job(job, parameters)
         console.print(Panel("Build triggered successfully", style="green", border_style="dim"))
+
+        # Save build information
+        if "builds" not in config["template"]:
+            config["template"]["builds"] = {}
+        config["template"]["builds"][job] = {"build_number": last_build_number + 1, "parameters": parameters}
         save_config(config)
     except jenkins.JenkinsException as e:
         console.print(Panel(f"Build trigger failed: {e}", style="bold red"))

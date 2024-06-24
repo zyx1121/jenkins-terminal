@@ -17,8 +17,11 @@ console = Console()
 def load_config() -> dict:
     if CONFIG_FILE_PATH.exists():
         with CONFIG_FILE_PATH.open("r") as file:
-            return yaml.safe_load(file)
-    return {"url": "", "username": "", "token": "", "template": {"job": ""}}
+            config = yaml.safe_load(file)
+            if "builds" not in config["template"]:
+                config["template"]["builds"] = {}
+            return config
+    return {"url": "", "username": "", "token": "", "template": {"job": "", "builds": {}}}
 
 
 def save_config(config: dict):

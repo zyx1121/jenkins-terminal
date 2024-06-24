@@ -54,13 +54,25 @@ jenkins config --username <username> --url <url> --token <token>
 Trigger a Jenkins job with parameters:
 
 ```bash
-jenkins build [<job>] <key1>=<value1> <key2>=<value2> ...
+jenkins build <job> --param/-p <key1>=<value1> --param/-p <key2>=<value2>
 ```
 
-You can also specify a YAML file containing job parameters:
+Trigger a Jenkins job with parameters from a YAML file:
 
 ```bash
-jenkins build [<job>] <parameters.yaml>
+jenkins build <job> --file/-f <file>
+```
+
+Trigger a Jenkins job with parameters from specific build:
+
+```bash
+jenkins build <job> --load/-l <build-number>
+```
+
+Also, you can combine the above options:
+
+```bash
+jenkins build <job> -l <build-number> -f <file> -p <key1>=<value1> -p <key2>=<value2>
 ```
 
 The YAML file should contain the job parameters in the following format:
@@ -75,7 +87,7 @@ key2: value2
 Get the status of a Jenkins job:
 
 ```bash
-jenkins status [<job>] [--build-number/-b <number>]
+jenkins status <job> --build-number/-b <number>
 ```
 
 ### Fetch Jenkins Job Console Output
@@ -83,7 +95,7 @@ jenkins status [<job>] [--build-number/-b <number>]
 Fetch and display the console output of the latest or a specific Jenkins job build:
 
 ```bash
-jenkins console [<job>] [--build-number/-b <number>] [--max-lines/-l <number>]
+jenkins output <job> --build-number/-b <number> --max-lines/-l <number>
 ```
 
 ### List the builds of Jenkins Job
@@ -91,7 +103,46 @@ jenkins console [<job>] [--build-number/-b <number>] [--max-lines/-l <number>]
 List the builds of a specified Jenkins job:
 
 ```bash
-jenkins builds [<job>]
+jenkins builds <job>
+```
+
+### Template Job
+
+Save the last executed job as a template in the `~/.config/jenkins.yaml`:
+
+```yaml
+template:
+  builds:
+    job1:
+      build_number: 10
+      parameters:
+        SITE: tpe001
+    job2:
+      build_number: 20
+      parameters:
+        SITE: tpe001
+    job3:
+      build_number: 30
+      parameters:
+        ENV: test1
+        SITE: tpe002
+  job: job3
+```
+
+You can run commands without specifying the job name and parameters:
+
+```bash
+jenkins build
+```
+
+Output:
+
+```bash
+╭─ Parameters for job: job3 ──────────────────────────────────────────────╮
+│ ENV = test1                                                             │
+│ SITE = tpe002                                                           │
+╰─────────────────────────────────────────────────────────────────────────╯
+Do you want to proceed with these parameters? [y/n]:
 ```
 
 ## Acknowledgements
