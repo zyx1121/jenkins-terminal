@@ -19,9 +19,9 @@ app = typer.Typer()
 console = Console()
 
 
-def parse_param(param: Optional[str]) -> dict:
+def parse_params(params: List[str]) -> dict:
     parameters = {}
-    if param:
+    for param in params:
         try:
             key, value = param.split("=")
             parameters[key] = value
@@ -59,7 +59,7 @@ def confirm_parameters(job: str, parameters: dict) -> bool:
 @app.command()
 def build(
     job: Optional[str] = typer.Argument(None, help="Jenkins job path, e.g., sv/protocol_tests"),
-    param: Optional[str] = typer.Option(None, "--param", "-p", help="Job parameter in key=value format"),
+    params: Optional[List[str]] = typer.Option(None, "--param", "-p", help="Job parameter in key=value format"),
     file: Optional[Path] = typer.Option(None, "--file", "-f", help="Path to YAML file containing job parameters"),
     load: Optional[int] = typer.Option(None, "--load", "-l", help="Load parameters from a specific build number"),
 ):
@@ -106,8 +106,8 @@ def build(
         file_parameters = load_params_from_file(file)
         parameters.update(file_parameters)
 
-    if param:
-        new_parameters = parse_param(param)
+    if params:
+        new_parameters = parse_params(params)
         parameters.update(new_parameters)
 
     if not confirm_parameters(job, parameters):
