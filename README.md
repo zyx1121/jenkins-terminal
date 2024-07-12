@@ -1,115 +1,109 @@
 # Jenkins Terminal Tool
 
-A command-line tool for interacting with Jenkins, allowing you to configure Jenkins credentials, trigger builds, and get job statuses.
+A powerful command-line tool for interacting with Jenkins, enabling easy configuration, build triggering, and status monitoring.
+
+[![PyPI version](https://badge.fury.io/py/jenkins-terminal.svg)](https://badge.fury.io/py/jenkins-terminal)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
-- Set Jenkins configuration parameters interactively or via command-line options
-- Trigger Jenkins jobs with parameters
-- Get the status of Jenkins jobs
-- Fetch and display Jenkins job console outputs
-- List the builds of a specified Jenkins job
-- Template job feature to automatically save and read last executed job
+- 🔧 Interactive and command-line Jenkins configuration
+- 🚀 Trigger Jenkins jobs with customizable parameters
+- 📊 Retrieve and display Jenkins job statuses
+- 📝 Fetch and show Jenkins job console outputs
+- 📋 List builds of specified Jenkins jobs
+- 💾 Template job feature for quick access to frequently used jobs
 
 ## Installation
 
 ### Using pip
 
-1. Install the tool:
+```bash
+pip install jenkins-terminal
+```
 
-    ```bash
-    pip install jenkins-terminal
-    ```
+## Quick Start
 
-2. Run the CLI tool:
+1. Set up your Jenkins configuration:
+   ```bash
+   jenkins config
+   ```
 
-    ```bash
-    jenkins <command>
-    ```
+2. Trigger a Jenkins job:
+   ```bash
+   jenkins build <job> --param key1=value1 --param key2=value2
+   ```
 
-## Usage
+3. Check job status:
+   ```bash
+   jenkins status <job>
+   ```
+
+## Detailed Usage
 
 ### Configuration
 
-You can set Jenkins configuration parameters either interactively or via command-line options.
-
-#### Interactively
-
-Run the following command and follow the prompts to enter your Jenkins URL, username, and API token:
-
+Set Jenkins configuration parameters interactively:
 ```bash
 jenkins config
 ```
 
-#### Command-line options
-
-You can also set the configuration parameters using command-line options:
-
+Or use command-line options:
 ```bash
 jenkins config --username <username> --url <url> --token <token>
 ```
 
-### Trigger a Jenkins Job
+### Build Triggering
 
-Trigger a Jenkins job with parameters:
-
+Trigger a job with inline parameters:
 ```bash
-jenkins build <job> --param/-p <key1>=<value1> --param/-p <key2>=<value2>
+jenkins build <job> -p key1=value1 -p key2=value2
 ```
 
-Trigger a Jenkins job with parameters from a YAML file:
-
+Use parameters from a YAML file:
 ```bash
-jenkins build <job> --file/-f <file>
+jenkins build <job> -f <file>
 ```
 
-Trigger a Jenkins job with parameters from specific build:
-
+Load parameters from a specific build:
 ```bash
-jenkins build <job> --load/-l <build-number>
+jenkins build <job> -l <build-number>
 ```
 
-Also, you can combine the above options:
-
+Combine options:
 ```bash
-jenkins build <job> -l <build-number> -f <file> -p <key1>=<value1> -p <key2>=<value2>
+jenkins build <job> -l <build-number> -f <file> -p key1=value1
 ```
 
-The YAML file should contain the job parameters in the following format:
+### Job Status and Output
 
-```yaml
-key1: value1
-key2: value2
-```
-
-### Get Jenkins Job Status
-
-Get the status of a Jenkins job:
-
+Get job status:
 ```bash
-jenkins status <job> --build-number/-b <number>
+jenkins status <job> -b <build-number>
 ```
 
-### Fetch Jenkins Job Console Output
-
-Fetch and display the console output of the latest or a specific Jenkins job build:
-
+Fetch console output:
 ```bash
-jenkins output <job> --build-number/-b <number> --max-lines/-l <number>
+jenkins output <job> -b <build-number> -l <max-lines>
 ```
 
-### List the builds of Jenkins Job
-
-List the builds of a specified Jenkins job:
-
+List job builds:
 ```bash
 jenkins builds <job>
 ```
 
-### Template Job
+### Template Job Feature
 
-Save the last executed job as a template in the `~/.config/jenkins.yaml`:
+The tool automatically saves the last executed job as a template. Run without specifying job name:
+```bash
+jenkins build
+```
 
+## Configuration File
+
+The tool uses `~/.config/jenkins.yaml` for storing configurations and templates.
+
+Example:
 ```yaml
 template:
   builds:
@@ -117,40 +111,23 @@ template:
       build_number: 10
       parameters:
         SITE: tpe001
-    job2:
-      build_number: 20
-      parameters:
-        SITE: tpe001
-    job3:
-      build_number: 30
-      parameters:
-        ENV: test1
-        SITE: tpe002
-  job: job3
+  job: job1
 ```
 
-You can run commands without specifying the job name and parameters:
+## Contributing
 
-```bash
-jenkins build
-```
-
-Output:
-
-```bash
-╭─ Parameters for job: job3 ──────────────────────────────────────────────╮
-│ ENV = test1                                                             │
-│ SITE = tpe002                                                           │
-╰─────────────────────────────────────────────────────────────────────────╯
-Do you want to proceed with these parameters? [y/n]:
-```
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Acknowledgements
 
 - [Typer](https://typer.tiangolo.com/) - CLI library for Python
-- [Rich](https://rich.readthedocs.io/) - Rich text and beautiful formatting in the terminal
+- [Rich](https://rich.readthedocs.io/) - Rich text formatting in the terminal
 - [Jenkins](https://www.jenkins.io/) - The leading open source automation server
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Support
+
+If you encounter any problems or have any questions, please [open an issue](https://github.com/yourusername/jenkins-terminal/issues) on GitHub.
