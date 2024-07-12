@@ -4,6 +4,7 @@ from typing import List, Optional
 import jenkins
 import typer
 import yaml
+import time
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
@@ -54,6 +55,27 @@ def confirm_parameters(job: str, parameters: dict) -> bool:
     params_text = "\n".join([f"[cyan]{key}[/cyan] = [yellow]{value}[/yellow]" for key, value in parameters.items()])
     console.print(Panel(params_text, title=f"Parameters for job: {job}", title_align="left", border_style="dim"))
     return Confirm.ask("Do you want to proceed with these parameters?")
+
+
+def stream_build_console_output(server, job_name, build_number):
+    console.print(Panel(f"Streaming console output for job {job_name} build #{build_number}", style="blue", border_style="dim"))
+    last_offset = 0
+    while True:
+        try:
+            output = server.get_build_console_output(job_name, build_number)
+            new_output = output[last_offset:]
+            console.print(new_output, end="")
+            last_offset = len(output)
+            # Check if build is still running
+            build_info = server.get_build_info(job_name, build_number)
+            if build_info["building"]:
+                time.sleep(2)
+            else:
+                break
+        except jenkins.JenkinsException as e:
+            console.print(Panel(f"Error streaming console output: {e}", style="bold red"))
+            break
+    console.print(Panel(f"Build #{build_number} completed.", style="green", border_style="dim"))
 
 
 @app.command()
@@ -117,19 +139,26 @@ def build(
     server = get_jenkins_server(config)
 
     try:
-        last_completed_build = server.get_job_info(job).get("lastCompletedBuild")
-        if last_completed_build:
-            last_build_number = last_completed_build["number"]
-        else:
-            last_build_number = 0  # Default to 0 if no completed build exists
-
-        server.build_job(job, parameters)
+        # Trigger the build
+        queue_id = server.build_job(job, parameters)
         console.print(Panel("Build triggered successfully", style="green", border_style="dim"))
+
+        # Get the build number of the triggered build
+        build_number = None
+        while not build_number:
+            queue_item = server.get_queue_item(queue_id)
+            if "executable" in queue_item:
+                build_number = queue_item["executable"]["number"]
+            else:
+                time.sleep(1)
+
+        # Stream the console output
+        stream_build_console_output(server, job, build_number)
 
         # Save build information
         if "builds" not in config["template"]:
             config["template"]["builds"] = {}
-        config["template"]["builds"][job] = {"build_number": last_build_number + 1, "parameters": parameters}
+        config["template"]["builds"][job] = {"build_number": build_number, "parameters": parameters}
         save_config(config)
     except jenkins.JenkinsException as e:
         console.print(Panel(f"Build trigger failed: {e}", style="bold red"))
