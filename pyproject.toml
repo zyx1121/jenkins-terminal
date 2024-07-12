@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jenkins-terminal"
-version = "0.5.3"
+version = "0.6.0"
 description = "A CLI tool for Jenkins"
 authors = ["Loki <yongxiang.zhan@outlook.com>"]
 license = "MIT"
