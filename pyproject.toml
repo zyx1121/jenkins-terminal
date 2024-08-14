@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jenkins-terminal"
-version = "0.7.0"
+version = "0.7.1"
 description = "A CLI tool for Jenkins"
 authors = ["Loki <yongxiang.zhan@outlook.com>"]
 license = "MIT"
@@ -14,7 +14,7 @@ pyyaml = "^6.0.1"
 python-jenkins = "^1.8.2"
 
 [tool.poetry.scripts]
-jenkins = "jenkins_terminal.main:app"
+jenkins = "jenkins_terminal.__main__:app"
 
 [build-system]
 requires = ["poetry-core"]
