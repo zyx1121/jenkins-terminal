@@ -1,10 +1,10 @@
+import time
 from pathlib import Path
 from typing import List, Optional
 
 import jenkins
 import typer
 import yaml
-import time
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
@@ -76,6 +76,9 @@ def stream_build_console_output(server, job_name, build_number):
             console.print(Panel(f"Error streaming console output: {e}", style="bold red"))
             break
     console.print(Panel(f"Build #{build_number} completed.", style="green", border_style="dim"))
+
+    job_url = server.build_job_url(job_name).replace("/build", f"/{build_number}")
+    console.print(Panel(f"Job URL: [link={job_url}]{job_url}[/link]", style="cyan", border_style="dim"))
 
 
 @app.command()
